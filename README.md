@@ -34,7 +34,7 @@ Code Examples
 #### Basic Backup Usage
 ```php
 <?php
-	require_once('lib/BackupClass.php');
+	use Louis1021\MysqlPhpBackupClass\DbBackup;
 	$dbConfig = array('host' => 'localhost',
 					  'login' => '{DBUsername}',
 					  'password' => '{DBPassword}',
@@ -48,7 +48,7 @@ Code Examples
 #### Extended Backup Usage (All Options, commented code)
 ```php
 <?php
-	require_once('lib/BackupClass.php');
+	use Louis1021\MysqlPhpBackupClass\DbBackup;
 	
 	//Database address, credentials and name
 	$dbConfig = array('host' => 'localhost',
@@ -88,7 +88,7 @@ Code Examples
 #### Basic Restore Usage
 ```php
 <?php
-	require_once('lib/BackupClass.php');
+	use Louis1021\MysqlPhpBackupClass\DbBackup;
 	$dbConfig = array('host' => 'localhost',
 					  'login' => '{DBUsername}',
 					  'password' => '{DBPassword}',
