@@ -1,0 +1,18 @@
+{
+  "name": "louis1021/mysql-php-backup-class",
+  "description": "Day end closing backup mechanism on database, as to prevent data loss",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Louis Lee",
+      "email": "louis@at-creative.com"
+    }
+  ],
+  "minimum-stability": "dev",
+  "autoload": {
+    "psr-4": {
+      "Louis1021\\MysqlPhpBackupClass\\": "src/"
+    }
+  }
+}

@@ -1,4 +1,7 @@
 <?php
+
+namespace Louis1021\MysqlPhpBackupClass;
+
 /**
 * $Id$
 *
