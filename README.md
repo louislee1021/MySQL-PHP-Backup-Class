@@ -6,8 +6,12 @@ This project provides a useful tool (PHP Class) to backup any MySQL database aut
 composer require louis1021/mysql-php-backup-class dev-master
 ```
 
+> THE AMAZON S3 IS NOT READY YET!
+
 # Changelog
 
+202007151522 - Now we have the current working environment
+202007151454 - Revamped and fixed mysqldump, mysql system command.
 202007151300 - Added namespace.     
 202007171257 - Rewritten the code and become a plugin.      
 202007171242 - Yes, I forked.       
@@ -64,7 +68,9 @@ Code Examples
 	
 	
 	$dbBackupObj = new DbBackup($dbConfig);
-	
+    
+    $dbBackupDbj->setCurrentWorkingDirectory(getcwd());
+
 	//Put backup files in the 'extendedExample' directory. NOTE: 'backups' DIR should be writable
 	$dbBackupObj->setBackupDirectory('backups/extendedExample');
 	
@@ -78,7 +84,7 @@ Code Examples
 	$dbBackupObj->addDumpOption('--xml','--force'); //Get XML output and Continue on error
 	
 	//Transfer your backup files to Amazon S3 Storage
-	$dbBackupObj->enableS3Support($amazonConfig);
+	// $dbBackupObj->enableS3Support($amazonConfig);
 	
 	//Start the actual backup process using the user specified settings and options
 	$dbBackupObj->executeBackup();

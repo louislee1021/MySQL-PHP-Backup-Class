@@ -1,13 +1,14 @@
 <?php
-require_once('lib/BackupClass.php');
+// Remove namespace first for testing purpose
+require_once('src/DbBackup.php');
 ?>
 <h1>Example of a DB Backup File</h1>
 <?php
 //Database Configurations Array
 $dbConfig = array('host' => 'localhost',
-					  'login' => '{DBUsername}',
-					  'password' => '{DBPassword}',
-					  'database_name' => '{DBName}');
+					  'login' => 'user',
+					  'password' => 'user',
+					  'database_name' => 'oauth_db');
 	
 //Amazon S3 Configurations Array (Optional)
 $amazonConfig = array('accessKey' => '{YOUR S3 ACCESS KEY}',
@@ -25,7 +26,8 @@ $dbBackupObj->executeBackup();
  * Example 2: Extended Backup
  */	
 try{
-	$dbBackupObj = new DbBackup($dbConfig);
+  $dbBackupObj = new DbBackup($dbConfig);
+  $dbBackupDbj->setCurrentWorkingDirectory(getcwd());
 	$dbBackupObj->setBackupDirectory('backups/extendedExample'); //CustomFolderName
 	$dbBackupObj->setDumpType(0); //To disable the single table files dumping (1 Dump file for the whole database)
 	$dbBackupObj->excludeTable('table1Name','tabel2Name','table3Name');	//Exclude few tables from your backup execution

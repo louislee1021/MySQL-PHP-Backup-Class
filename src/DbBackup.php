@@ -2,7 +2,11 @@
 
 namespace Louis1021\MysqlPhpBackupClass;
 
+use DateTime;
+use DateTimeZone;
 use Exception;
+use mysqli;
+use mysqli_result;
 
 /** 
 * MySQL database backup class
@@ -12,7 +16,6 @@ use Exception;
 * @access public
 *
 */
-
 class DbBackup {
 	/** 
 	* Full absolute path to database backup directory on the server without prevailing slashes
@@ -80,7 +83,16 @@ class DbBackup {
 	* @see addDumpOption();executeBackup();
 	*/
 	private $dumpOptions = "--opt --add-locks --skip-comments";
-	
+  
+  /**
+   * Customed time, +08:00 GMT
+   *
+   * @var string
+   */
+  private $time;
+
+  private $cwd;
+
 	/**
 	* Constructor of the class
 	*
@@ -104,9 +116,16 @@ class DbBackup {
 		$this->databaseVars = $dbConfigVars;
 		$this->s3Config = $S3ConfigVars;
 		$this->createNewDbConnection();
-		$this->setBackupDirectory('backups/' . $dbConfigVars['database_name']);
+    $this->setBackupDirectory('backups/' . $dbConfigVars['database_name']);
+    $this->time = (new DateTime())->setTimezone(new DateTimeZone('Asia/Hong_Kong'))->format('Y_m_d_H_i');
 	}
-	
+  
+  public function setCurrentWorkingDirectory($cwd) {
+    $this->cwd = $cwd;
+
+    return $this;
+  }
+
 	/** 
 	* Creates a New MySQLi connection to the database using the user supplied connection vars and assigns it to the dbObject class property
 	*
@@ -115,7 +134,6 @@ class DbBackup {
 	* @see __construct()
 	*
 	*/
-	
 	private function createNewDbConnection(){
 		$this->dbObject = @new mysqli($this->databaseVars['host'],$this->databaseVars['login'],$this->databaseVars['password'],$this->databaseVars['database_name']);
 		
@@ -127,7 +145,7 @@ class DbBackup {
 	/** 
 	* Executes a Query on the Database to list all tables of the Selected DB
 	*
-	* @return MySQLi Results
+	* @return mysqli_result Results
 	* @access private
 	* @see executeBackup()
 	*
@@ -192,15 +210,18 @@ class DbBackup {
 				if(!in_array($table_name,$this->excludeTables)){//validate the table name is not within the excluded tables, if excluded nothing will happen and we will shift to the next table in the list 
 					
 					//create the file name (Prefixed with db_backup and suffixed with date and time)
-					$file_name = "db_backup_".$table_name."_".date('Y_m_d_H_i').".sql";
+					$file_name = "db_backup_".$table_name."_". $this->time .".sql";
 					
-					//Execute the dump command
-					system("mysqldump ".$this->dumpOptions." --user='".$this->databaseVars['login']."' --password='".$this->databaseVars['password']."' ".$this->databaseVars['database_name']." ".$table_name." > ".$this->folderName.'/'.$file_name);
+          //Execute the dump command
+          $cmd = "mysqldump ".$this->dumpOptions." -h ". $this->databaseVars['host'] ." -u ".$this->databaseVars['login']." -p".$this->databaseVars['password']." ".$this->databaseVars['database_name']." ".$table_name." > ".$this->folderName.'/'.$file_name;
+					system($cmd);
 				}
 			}
 		}else{
-			$file_name = "db_backup_ALL_".date('Y_m_d_H_i').".sql";
-			system("mysqldump ".$this->dumpOptions." --user='".$this->databaseVars['login']."' --password='".$this->databaseVars['password']."' ".$this->databaseVars['database_name']." > ".$this->folderName.'/'.$file_name);
+      $file_name = "db_backup_ALL_".$this->time.".sql";
+      
+      $cmd = "mysqldump ".$this->dumpOptions." -h ". $this->databaseVars['host'] ." -u ".$this->databaseVars['login']." -p".$this->databaseVars['password']." ".$this->databaseVars['database_name']." > ".$this->folderName.'/'.$file_name;
+			system($cmd);
 		}
 		$this->finalizeBackup();
 	}
@@ -214,7 +235,7 @@ class DbBackup {
 	*
 	*/
 	private function finalizeBackup(){
-		$currentWD = getcwd();
+		$currentWD = $this->cwd;
 		
 		//Change the PHP working Directory. (To solve the issues with having nested dirs added to the archieve)
 		chdir($currentWD . "/" . $this->folderName); 
@@ -265,7 +286,7 @@ class DbBackup {
 			
 			//Restore all files available in the current folder
 			foreach($dumpedFiles as $sqlFile){
-				system("mysql --user='".$this->databaseVars['login']."' --password='".$this->databaseVars['password']."' ".$this->databaseVars['database_name']." < ".$sqlFile);		
+				system("mysql -u ".$this->databaseVars['login']." -p".$this->databaseVars['password']." ".$this->databaseVars['database_name']." < ".$sqlFile);		
 			}
 		}else{
 			throw new Exception("Backup Class couldn't find any backup files to restore from. Restore Porcess Failed.");
@@ -280,7 +301,7 @@ class DbBackup {
 	*
 	* @param string $directory_path - backup directory path
 	* @param boolean $force_create - backup directory path
-	* @return Boolean
+	* @return $this
 	* @access public
 	* @see createDir()
 	*
@@ -295,7 +316,7 @@ class DbBackup {
 			}
 		}
 		$this->backupDir = $directory_path;
-		return true;
+		return $this;
 	}
 	
 	/** 
@@ -361,7 +382,7 @@ class DbBackup {
 	*
 	*/
 	private function createNewClassDirectory($classSubject = "backup"){
-		$folder_name = $this->databaseVars['database_name']."_".$classSubject."_".date('Y-m-d_H-i-s');
+		$folder_name = $this->databaseVars['database_name']."_".$classSubject."_". $this->time;
 		mkdir($this->backupDir."/".$folder_name);
 		$this->folderName = $this->backupDir."/".$folder_name;
 	}
@@ -396,8 +417,6 @@ class DbBackup {
 	*
 	*/
 	private function transferToAmazon(){
-		require_once('S3.php');
-		
 		//Create a new Instance of the S3 Object
 		$s3 = new S3($this->s3Config['accessKey'], $this->s3Config['secretKey'], false);
 		
@@ -415,7 +434,7 @@ class DbBackup {
 	* Add one or more tables to be excluded from the backup process
 	*
 	* @param string $tableName One or more table names to exclude
-	* @return void
+	* @return $this
 	* @access public
 	*
 	*/
@@ -428,7 +447,9 @@ class DbBackup {
 			$this->excludeTables = array_merge($this->excludeTables,$args);
 	    }else{
 	    	throw new Exception("You need to provide at least one table name to be excluded.");
-	    }
+      }
+      
+    return $this;
 	}
 	
 	
@@ -436,7 +457,7 @@ class DbBackup {
 	* Add one or more dump option to the default options
 	*
 	* @param string $dumpOption One or more dump options used in execution
-	* @return void
+	* @return $this
 	* @access public
 	*
 	*/
@@ -463,6 +484,8 @@ class DbBackup {
 			}
 	    }else{
 	    	throw new Exception("You need to provide at least one dump option to be added.");
-	    }
+      }
+      
+    return $this;
 	}
 }
