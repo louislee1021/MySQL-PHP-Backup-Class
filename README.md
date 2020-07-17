@@ -10,11 +10,15 @@ composer require louis1021/mysql-php-backup-class dev-master
 
 # Changelog
 
-202007151522 - Now we have the current working environment.		
-202007151454 - Revamped and fixed mysqldump, mysql system command.		
-202007151300 - Added namespace.		
-202007171257 - Rewritten the code and become a plugin.		
-202007171242 - Yes, I forked.		
+202007151522 - Now we have the current working environment.
+
+202007151454 - Revamped and fixed mysqldump, mysql system command.
+
+202007151300 - Added namespace.
+
+202007171257 - Rewritten the code and become a plugin.
+
+202007171242 - Yes, I forked.
 
 # Features
 	- Backup the whole database (All Tables) in one single file
