@@ -2,11 +2,15 @@ MySQL Backup Class
 ==================
 This project provides a useful tool (PHP Class) to backup any MySQL database automaticall with Amazon S3 Support.
 
+```bash
+composer require louis1021/mysql-php-backup-class dev-master
+```
+
 # Changelog
 
-202007151300 - Added namespace.
-202007171257 - Rewritten the code and become a plugin.
-202007171242 - Yes, I forked.
+202007151300 - Added namespace.     
+202007171257 - Rewritten the code and become a plugin.      
+202007171242 - Yes, I forked.       
 
 # Features
 	- Backup the whole database (All Tables) in one single file
