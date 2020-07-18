@@ -49,6 +49,8 @@ Code Examples
 					  'database_name' => '{DBName}');
 	
 	$dbBackupObj = new DbBackup($dbConfig);
+	$dbBackupObj->setBackupDirectory('database/backup');
+	$dbBackupDbj->setCurrentWorkingDirectory(getcwd());
 	$dbBackupObj->executeBackup();
 ?>
 ```
@@ -73,7 +75,7 @@ Code Examples
 	
 	$dbBackupObj = new DbBackup($dbConfig);
     
-    $dbBackupDbj->setCurrentWorkingDirectory(getcwd());
+    	$dbBackupDbj->setCurrentWorkingDirectory(getcwd());
 
 	//Put backup files in the 'extendedExample' directory. NOTE: 'backups' DIR should be writable
 	$dbBackupObj->setBackupDirectory('backups/extendedExample');
